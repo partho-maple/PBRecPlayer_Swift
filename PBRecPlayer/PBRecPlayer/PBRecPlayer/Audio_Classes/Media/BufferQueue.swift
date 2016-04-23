@@ -13,6 +13,10 @@ class BufferQueue: NSObject {
     var front: CInt
     var rear: CInt
 
+    required init?(coder aDecoder: NSCoder) {
+        
+    }
+    
     convenience override init() {
         self.init()
         //buffer = alloca(514);
