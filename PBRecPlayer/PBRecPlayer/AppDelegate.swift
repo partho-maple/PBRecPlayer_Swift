@@ -2,15 +2,15 @@
 //  AppDelegate.h
 //  PBRecPlayer
 //
-//  Created by Partho Biswas on 10/12/14.
+//  Created by Partho Biswas on 21/04/16.
 //  Copyright (c) 2014 Partho Biswas All rights reserved.
 //
+
 import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject : AnyObject]?) -> Bool {
+    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject : AnyObject]?) -> CBool {
         // Override point for customization after application launch.
         return true
     }
@@ -37,10 +37,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 }
-//
-//  AppDelegate.m
-//  PBRecPlayer
-//
-//  Created by Partho Biswas on 10/12/14.
-//  Copyright (c) 2014 Partho Biswas All rights reserved.
-//
+

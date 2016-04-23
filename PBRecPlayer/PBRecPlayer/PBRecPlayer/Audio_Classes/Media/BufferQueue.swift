@@ -2,24 +2,26 @@
 //  BufferQueue.h
 //  PBRecPlayer
 //
-//  Created by Partho Biswas on 10/13/14.
+//  Created by Partho Biswas on 21/04/16.
 //  Copyright (c) 2014 Partho Biswas All rights reserved.
 //
+
 import Foundation
 class BufferQueue: NSObject {
 
     //@property (readwrite) short *buffer;
-    var front: Int
-    var rear: Int
+    var front: CInt
+    var rear: CInt
 
     convenience override init() {
         self.init()
         //buffer = alloca(514);
-        front = rear = 0
+        front = 0
+        rear = 0
     }
 
-    func pushData(data: Byte, datalength datalen: Int) -> Boolean {
-        var totalDataLength: Int = datalen
+    func pushData(data: Byte, CIntdatalength datalen: CInt) -> CBool {
+        var totalDataLength: CInt = datalen
         //    NSLog(@"pushData stat rear %d - front %d", rear, front);
         if rear + totalDataLength < kBufferSize {
                 //        NSLog(@"rear+ totalDataLength , rear: %d, %d", rear+ totalDataLength, rear);
@@ -27,7 +29,7 @@ class BufferQueue: NSObject {
             //        NSLog(@"coppied");
         }
         else {
-            var availableLength: Int = kBufferSize - rear
+            var availableLength: CInt = kBufferSize - rear
                 //        NSLog(@"available length , rear: %d, %d", availableLength, rear);
             rear = totalDataLength - availableLength
             if rear >= front {
@@ -43,12 +45,12 @@ class BufferQueue: NSObject {
         return true
     }
 
-    func popData(data: Byte, datalength datalen: Int) -> Boolean {
+    func popData(data: Byte, datalength datalen: CInt) -> CBool {
         if rear == front {
             return false
         }
             //    NSLog(@"pop start rear %d - front %d", rear, front);
-        var totalDataToPop: Int = datalen
+        var totalDataToPop: CInt = datalen
         if rear > front {
             if (rear - front) >= totalDataToPop {
                 front += totalDataToPop
@@ -58,13 +60,13 @@ class BufferQueue: NSObject {
             }
         }
         else {
-            var availableDataSize: Int = (kBufferSize - front) + rear
+            var availableDataSize: CInt = (kBufferSize - front) + rear
             if availableDataSize >= totalDataToPop {
                 if (kBufferSize - front) >= totalDataToPop {
                     front += totalDataToPop
                 }
                 else {
-                    var len: Int = kBufferSize - front
+                    var len: CInt = kBufferSize - front
                         //                NSLog(@"available: %d totalDataToPop: %d front: %d len: %d", availableDataSize, totalDataToPop, front, len);
                     front = totalDataToPop - len
                     //                NSLog(@"Complete pop. front: %d", front);
@@ -81,8 +83,8 @@ class BufferQueue: NSObject {
         return true
     }
 
-    func getAvailableSize() -> Int {
-        var size: Int = 0
+    func getAvailableSize() -> CInt {
+        var size: CInt = 0
         if rear > front {
             size = rear - front
         }
@@ -95,12 +97,6 @@ class BufferQueue: NSObject {
 
     var bufferq: Int8
 }
-//
-//  BufferQueue.m
-//  PBRecPlayer
-//
-//  Created by Partho Biswas on 10/13/14.
-//  Copyright (c) 2014 Partho Biswas All rights reserved.
-//
 
-let kBufferSize = 1024
+
+let kBufferSize: CInt = 1024

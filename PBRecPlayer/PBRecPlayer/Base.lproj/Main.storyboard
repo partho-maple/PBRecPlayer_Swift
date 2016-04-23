@@ -17,12 +17,9 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Tab-o9-5ty">
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Tab-o9-5ty">
                                 <rect key="frame" x="16" y="96" width="288" height="53"/>
                                 <color key="backgroundColor" red="0.094117656349999995" green="0.65882354970000001" blue="0.1215686351" alpha="1" colorSpace="deviceRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="53" id="orm-9F-1w3"/>
-                                </constraints>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                 <state key="normal" title="START">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -34,12 +31,6 @@
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                        <constraints>
-                            <constraint firstAttribute="trailing" secondItem="Tab-o9-5ty" secondAttribute="trailing" constant="16" id="1JI-jH-u0T"/>
-                            <constraint firstItem="Tab-o9-5ty" firstAttribute="top" secondItem="jyV-Pf-zRb" secondAttribute="bottom" constant="32" id="G3Q-C7-kb0"/>
-                            <constraint firstItem="Tab-o9-5ty" firstAttribute="centerX" secondItem="kh9-bI-dsS" secondAttribute="centerX" id="b67-9L-Uyn"/>
-                            <constraint firstItem="Tab-o9-5ty" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" constant="16" id="cvg-9V-EOy"/>
-                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="PBRecPlayer" id="uZv-rx-RNM"/>
                     <connections>

@@ -2,31 +2,40 @@
 //  ViewController.h
 //  PBRecPlayer
 //
-//  Created by Partho Biswas on 10/12/14.
+//  Created by Partho Biswas on 21/04/16.
 //  Copyright (c) 2014 Partho Biswas All rights reserved.
 //
+
 import UIKit
 import AVFoundation
 import AVFoundation
 import CoreBluetooth
+import Swift
+
+
+typealias Byte = UInt8
 
 
 class ViewController: UIViewController, AudioControllerDelegate {
     
-    var iRTPDataLen: Int
-    var isRunning: Bool
-    
+    var iRTPDataLen: CInt = 0
+    var isRunning: CBool
     @IBOutlet weak var startStopButton: UIButton!
     
     
+    required init?(coder aDecoder: NSCoder) {
+        
+    }
+    
+    
     func StartAudio() {
-        iosAudio.start()
-        iosAudio.resetRTPQueue()
+        AudioHandler.sharedInstance().start()
+        AudioHandler.sharedInstance().resetRTPQueue()
     }
 
     func StopAudio() {
-        iosAudio.stop()
-        iosAudio.resetRTPQueue()
+        AudioHandler.sharedInstance().stop()
+        AudioHandler.sharedInstance().resetRTPQueue()
     }
 
     var byteRTPDataToSend: UInt8
@@ -35,8 +44,7 @@ class ViewController: UIViewController, AudioControllerDelegate {
         super.viewDidLoad()
         self.isRunning = false
         self.iRTPDataLen = 0
-        iosAudio = AudioHandler()
-        iosAudio.audioDelegate = self
+        AudioHandler.sharedInstance().audioDelegate = self
     }
 
     override func didReceiveMemoryWarning() {
@@ -45,19 +53,20 @@ class ViewController: UIViewController, AudioControllerDelegate {
     }
     // Basically, it will a callback method which will be called after getting each trp packet.
 
-    func receivedRtpWithData(pChRtp: UInt8, andLength len: Int) {
-        var receivedRTPData: Byte
-        var receivedRTPDataLength: Int = 0
+    func receivedRtpWithData(pChRtp: UInt8, andLength len: CInt) {
+        let receivedRTPData: Byte
+        var receivedRTPDataLength: CInt = 0
         receivedRTPDataLength = len
-        iosAudio.receiverAudio(receivedRTPData, WithLen: receivedRTPDataLength)
+        AudioHandler.sharedInstance().receiverAudio(receivedRTPData, WithLen: receivedRTPDataLength)
     }
     // This method will be called after pulling each recorded data block
 
-    func recordedRTP(rtpData: Byte, andLenght len: Int) {
+    func recordedRTP(rtpData: Byte, andLenght len: CInt) {
             /* Here we will send rtpData(recorded and encoded data to send) to the other end. We have encoder, recorded data into rtpData variable and it's length is into len variable */
         self.iRTPDataLen += len
         self.receivedRtpWithData(byteRTPDataToSend, andLength: self.iRTPDataLen)
-        memset(byteRTPDataToSend, 0, 500)
+//        memset(byteRTPDataToSend, 0, 500)
+        memset(&byteRTPDataToSend, 0, 500)
         self.iRTPDataLen = 0
     }
 
@@ -72,10 +81,8 @@ class ViewController: UIViewController, AudioControllerDelegate {
             self.StartAudio()
             self.startStopButton.setTitle("STOP", forState: .Normal)
         }
-        self.StartAudio()
     }
 
 }
-
 
 

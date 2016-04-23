@@ -2,7 +2,7 @@
 //  AudioHandler.h
 //  PBRecPlayer
 //
-//  Created by Partho Biswas on 10/13/14.
+//  Created by Partho Biswas on 21/04/16.
 //  Copyright (c) 2014 Partho Biswas All rights reserved.
 //
 
@@ -11,18 +11,28 @@ import Foundation
 import AudioToolbox
 import CoreAudio
 import AVFoundation
+import Swift
+
+//import G729Wrapper
+
+
 //#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
 //#define min( a, b ) ( ((a) < (b)) ? (a) : (b) )
-protocol AudioControllerDelegate: NSObject {
-    func recordedRTP(rtpData: Byte, andLenght len: Int)
+
+
+protocol AudioControllerDelegate {
+    func recordedRTP(rtpData: Byte, andLenght len: CInt)
 }
+
+
 class AudioHandler: NSObject {
-    var audioUnit: AudioComponentInstance
-    var tempBuffer: AudioBuffer
+//    var audioUnit: AudioComponentInstance
+//    var tempBuffer: AudioBuffer
     // this will hold the latest data from the microphone
     var recordedPCMBuffer: TPCircularBuffer
     var receivedPCMBuffer: TPCircularBuffer
     var audioDelegate: AudioControllerDelegate
+    var g729EncoderDecoder: G729Wrapper
 
     var audioUnit: AudioComponentInstance {
         get {
@@ -37,12 +47,21 @@ class AudioHandler: NSObject {
     }
 
     var pcmRcordedData: BufferQueue
-    weak var audioDelegate: AudioControllerDelegate
-    var isRecordDataPullingThreadRunning: Bool
-    var isAudioUnitRunning: Bool
-    var isLocalRingBackToneEnabled: Bool
-    var isLocalRingToneEnabled: Bool
-    var isBufferClean: Bool
+//    weak var audioDelegate: AudioControllerDelegate
+    var isRecordDataPullingThreadRunning: CBool
+    var isAudioUnitRunning: CBool
+    var isLocalRingBackToneEnabled: CBool
+    var isLocalRingToneEnabled: CBool
+    var isBufferClean: CBool
+
+    class func sharedInstance() -> AudioHandler {
+//        if sharedInstance == nil {
+//            sharedInstance = AudioHandler()
+//        }
+//        return sharedInstance!
+        
+        return sharedAudioHandler;
+    }
 
     func start() {
         if isAudioUnitRunning {
@@ -54,11 +73,14 @@ class AudioHandler: NSObject {
         g729EncoderDecoder.open()
             var status: OSStatus
         var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
-        audioSession.setCategory(.PlayAndRecord, error: nil)
-        audioSession.setActive(true, error: nil)
-        AVAudioSession.sharedInstance().overrideOutputAudioPort(.None, error: nil)
+        try! audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
+//        audioSession.setCategory(.PlayAndRecord)
+//        audioSession.setActive(true, error: nil)
+        try! audioSession.setActive(true)
+        try! audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.None)
         //    Activates the audio session
-        status = AudioSessionSetActive(true)
+//        status = AudioSessionSetActive(true)
+        try! audioSession.setActive(true)
         checkStatus(status)
         //    Initialise the audio unit
         status = AudioUnitInitialize(audioUnit)
@@ -66,7 +88,7 @@ class AudioHandler: NSObject {
         //    Starts the Audio Unit
         status = AudioOutputUnitStart(audioUnit)
         checkStatus(status)
-        if !self.isRecordDataPullingThreadRunning() {
+        if !self.isRecordDataPullingThreadRunning {
             recorderThread = NSThread(target: self, selector: "recordDataPullingMethod", object: nil)
             self.isRecordDataPullingThreadRunning = true
             recorderThread.start()
@@ -75,7 +97,7 @@ class AudioHandler: NSObject {
         isAudioUnitRunning = true
     }
 
-    override func stop() {
+    func stop() {
         if !isAudioUnitRunning {
             return
         }
@@ -87,8 +109,9 @@ class AudioHandler: NSObject {
         status = AudioOutputUnitStop(audioUnit)
         checkStatus(status)
         //    Deactivates the audio session
-        status = AudioSessionSetActive(false)
-        AVAudioSession.sharedInstance().setActive(false, withOptions: .NotifyOthersOnDeactivation, error: nil)
+//        status = AudioSessionSetActive(false)
+        try! AVAudioSession.sharedInstance().setActive(false)
+//        AVAudioSession.sharedInstance().setActive(false, withOptions: .NotifyOthersOnDeactivation, error: nil)
         checkStatus(status)
         //    Uninitialise the Audio Unit
         status = AudioUnitUninitialize(audioUnit)
@@ -99,42 +122,45 @@ class AudioHandler: NSObject {
     }
 
     func processAudio(bufferList: AudioBufferList) {
-        var isRecordedBufferProduceBytes: Bool = false
+        var isRecordedBufferProduceBytes: CBool = false
+        
+//        let pTPB:TPCircularBuffer = UnsafeMutablePointer<TPCircularBuffer>(recordedPCMBuffer).memory
+        
         isRecordedBufferProduceBytes = TPCircularBufferProduceBytes(recordedPCMBuffer, bufferList.mBuffers[0].mData, bufferList.mBuffers[0].mDataByteSize)
         if !isRecordedBufferProduceBytes {
 
         }
     }
 
-    func receiverAudio(audio: Byte, WithLen len: Int) {
-        var isBufferProduceBytes: Bool = false
+    func receiverAudio(audio: Byte, WithLen len: CInt) {
+        var isBufferProduceBytes: CBool = false
                 do {
-            try var numberOfDecodedShorts: Int = g729EncoderDecoder.decodeWithG729(audio, andSize: len, andEncodedPCM: receivedShort)
+            var numberOfDecodedShorts: CInt = try g729EncoderDecoder.decodeWithG729(audio, andSize: len, andEncodedPCM: receivedShort)
             isBufferProduceBytes = TPCircularBufferProduceBytes(receivedPCMBuffer, receivedShort, (numberOfDecodedShorts * 2))
         } catch let exception {
-        } 
+        }
         if !isBufferProduceBytes {
 
         }
     }
 
     func recordDataPullingMethod() {
-            var availableBytes: Int
-        while self.isRecordDataPullingThreadRunning() {
-            var buffer: SInt16 = TPCircularBufferTail(recordedPCMBuffer, availableBytes)
+            var availableBytes: CInt
+        while self.isRecordDataPullingThreadRunning {
+            var buffer: Int16 = TPCircularBufferTail(recordedPCMBuffer, availableBytes)
             if availableBytes > 159 {
                 var g729EncodedBytes: Byte
-                var encodedLength: Int = g729EncoderDecoder.encodeWithPCM(shortArray, andSize: 80, andEncodedG729: g729EncodedBytes)
+                var encodedLength: CInt = g729EncoderDecoder.encodeWithPCM(shortArray, andSize: 80, andEncodedG729: g729EncodedBytes)
                 // Here encodedLength will be 10 if g729EncodedBytes size is 80.
                 if encodedLength > 0 {
-                    if audioDelegate.respondsToSelector("recordedRTP:andLenght:") {
+//                    if audioDelegate.respondsToSelector("recordedRTP:andLenght:") {
                         audioDelegate.recordedRTP(g729EncodedBytes, andLenght: encodedLength)
-                    }
+//                    }
                 }
             }
         }
         recorderThread.cancel()
-        recorderThread = nil
+//        recorderThread = nil
         NSThread.exit()
     }
 
@@ -154,6 +180,10 @@ class AudioHandler: NSObject {
      and will be copied to the output when this is requested.
      */
 
+    required init?(coder aDecoder: NSCoder) {
+        
+    }
+    
     convenience override init() {
         self.init()
             var status: OSStatus
@@ -184,7 +214,7 @@ class AudioHandler: NSObject {
             var audioFormat: AudioStreamBasicDescription
         audioFormat.mSampleRate = 8000
         audioFormat.mFormatID = kAudioFormatLinearPCM
-        audioFormat.mFormatFlags = kAudioFormatFlagsCanonical | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked
+        audioFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked
         audioFormat.mFramesPerPacket = 1
         audioFormat.mChannelsPerFrame = 1
         audioFormat.mBitsPerChannel = 16
@@ -259,11 +289,11 @@ class AudioHandler: NSObject {
         bufferList.mNumberBuffers = 1
         bufferList.mBuffers[0] = buffer
             var status: OSStatus
-        status = AudioUnitRender(iosAudio.audioUnit(), ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, bufferList)
+        status = AudioUnitRender(sharedInstance!.audioUnit(), ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, bufferList)
         checkStatus(status)
         // Now, we have the samples we just read sitting in buffers in bufferList
         // Process the new data
-        iosAudio.processAudio(bufferList)
+        sharedInstance!.processAudio(bufferList)
         // release the malloc'ed data in the buffer we created earlier
         free(bufferList.mBuffers[0].mData)
         return noErr
@@ -276,11 +306,11 @@ class AudioHandler: NSObject {
             // Notes: ioData contains buffers (may be more than one!)
             // Fill them up as much as you can. Remember to set the size value in each buffer to match how
             // much data is in the buffer.
-        var THIS: AudioHandler = iosAudio
+        var THIS: AudioHandler = sharedInstance!
         for var i = 0; i < ioData.mNumberBuffers; i++ {
                 // in practice we will only ever have 1 buffer, since audio format is mono
             var buffer: AudioBuffer = ioData.mBuffers[i]
-                var availabeBytes: Int
+                var availabeBytes: CInt
                 var size: UInt32
             var temp: SInt16? = nil
             availabeBytes = THIS.receivedPCMBuffer.fillCount
@@ -298,33 +328,20 @@ class AudioHandler: NSObject {
         }
         return noErr
     }
-    /**
-     Clean up.
-     */
 
-    func dealloc() {
-    }
 }
-// setup a global iosAudio variable, accessible everywhere
-var iosAudio: AudioHandler
 
-//
-//  AudioHandler.m
-//  PBRecPlayer
-//
-//  Created by Partho Biswas on 10/13/14.
-//  Copyright (c) 2014 Partho Biswas All rights reserved.
-//
 
-import AudioToolbox
-let kOutputBus = 0
-let kInputBus = 1
-var iosAudio: AudioHandler
 
-var g729EncoderDecoder: G729Wrapper
+let kOutputBus:CInt = 0
+let kInputBus:CInt = 1
+//var g729EncoderDecoder: G729Wrapper
 
-func checkStatus() {
-    if status != nil {
-        //		exit(1);
+//var sharedInstance: AudioHandler? = nil
+private let sharedAudioHandler = AudioHandler()
+
+func checkStatus(status :CInt) {
+    if status<0 {
+        print("Status not 0! %d\n", status);
     }
 }

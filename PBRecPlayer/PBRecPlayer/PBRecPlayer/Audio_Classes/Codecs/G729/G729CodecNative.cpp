@@ -1,6 +1,13 @@
 #include "G729CodecNative.h"
 #include <stdlib.h>
 
+#include "typedef.h"
+#include "basic_op.h"
+#include "ld8a.h"
+
+#include "g729a.h"
+
+
 G729CodecNative::G729CodecNative(void)
 {
 	_hEncoder = NULL;
