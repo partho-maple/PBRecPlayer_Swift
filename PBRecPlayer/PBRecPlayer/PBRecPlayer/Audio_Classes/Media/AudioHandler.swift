@@ -35,12 +35,7 @@ class AudioHandler: NSObject {
     var g729EncoderDecoder: G729Wrapper
 
     var audioUnit:AudioUnit
-
-    var tempBuffer: AudioBuffer {
-        get {
-            return self.tempBuffer
-        }
-    }
+    var tempBuffer:AudioBuffer
 
     var pcmRcordedData: BufferQueue
 //    weak var audioDelegate: AudioControllerDelegate
@@ -64,11 +59,11 @@ class AudioHandler: NSObject {
             return
         }
             //    This will enable the proximity monitoring.
-        var device: UIDevice = UIDevice.currentDevice()
+        let device: UIDevice = UIDevice.currentDevice()
         device.proximityMonitoringEnabled = true
         g729EncoderDecoder.open()
             var status: OSStatus
-        var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+        let audioSession: AVAudioSession = AVAudioSession.sharedInstance()
         try! audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
 //        audioSession.setCategory(.PlayAndRecord)
 //        audioSession.setActive(true, error: nil)
@@ -85,7 +80,7 @@ class AudioHandler: NSObject {
         status = AudioOutputUnitStart(audioUnit)
         checkStatus(status)
         if !self.isRecordDataPullingThreadRunning {
-            recorderThread = NSThread(target: self, selector: "recordDataPullingMethod", object: nil)
+            recorderThread = NSThread(target: self, selector: #selector(AudioHandler.recordDataPullingMethod), object: nil)
             self.isRecordDataPullingThreadRunning = true
             recorderThread.start()
             //        [recorderThread setThreadPriority:1.0];
@@ -98,7 +93,7 @@ class AudioHandler: NSObject {
             return
         }
             //    This will disable the proximity monitoring.
-        var device: UIDevice = UIDevice.currentDevice()
+        let device: UIDevice = UIDevice.currentDevice()
         device.proximityMonitoringEnabled = false
             var status: OSStatus
         //    Stops the Audio Unit
@@ -234,10 +229,10 @@ class AudioHandler: NSObject {
                  * application is in the background mode.
                  */
             /* Make sure we set the correct audio category before restarting */
-        var audioCategory: UInt32 = kAudioSessionCategory_PlayAndRecord
-        status = AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(), audioCategory)
+        var audioCategory = kAudioSessionCategory_PlayAndRecord
+        status = AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(audioCategory), audioCategory)
         checkStatus(status)
-        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, audioFormat, sizeof())
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &audioFormat, UInt32(sizeof(UInt32)))
         checkStatus(status)
             // Set input callback
             var callbackStruct: AURenderCallbackStruct
