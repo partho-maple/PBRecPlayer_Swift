@@ -34,11 +34,7 @@ class AudioHandler: NSObject {
     var audioDelegate: AudioControllerDelegate
     var g729EncoderDecoder: G729Wrapper
 
-    var audioUnit: AudioComponentInstance {
-        get {
-            return self.audioUnit
-        }
-    }
+    var audioUnit:AudioUnit
 
     var tempBuffer: AudioBuffer {
         get {
@@ -186,29 +182,36 @@ class AudioHandler: NSObject {
     
     convenience override init() {
         self.init()
-            var status: OSStatus
+        
+        self.audioUnit = AudioUnit()
+        var status: OSStatus
         pcmRcordedData = BufferQueue()
         g729EncoderDecoder = G729Wrapper()
         TPCircularBufferInit(recordedPCMBuffer, 100000)
         TPCircularBufferInit(receivedPCMBuffer, 100000)
             // Describe audio component
-            var desc: AudioComponentDescription
+        var desc: AudioComponentDescription = AudioComponentDescription()
         desc.componentType = kAudioUnitType_Output
         desc.componentSubType = kAudioUnitSubType_VoiceProcessingIO
         desc.componentFlags = 0
         desc.componentFlagsMask = 0
         desc.componentManufacturer = kAudioUnitManufacturer_Apple
             // Get component
-        var inputComponent: AudioComponent = AudioComponentFindNext(nil, desc)
+        var inputComponent: AudioComponent = AudioComponentFindNext(nil, &desc)
         // Get audio units
-        status = AudioComponentInstanceNew(inputComponent, audioUnit)
+        status = AudioComponentInstanceNew(inputComponent, &audioUnit)
         checkStatus(status)
             // Enable IO for recording
-        var flag: UInt32 = 1
-        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, flag, sizeof())
+        var flag = UInt32(1)
+        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, UInt32(sizeof(UInt32)))
+        
+//        var flag = UInt32(1)
+//        assert(AudioUnitSetProperty(audioUnit, AudioUnitPropertyID(kAudioOutputUnitProperty_EnableIO), AudioUnitScope(kAudioUnitScope_Input), inputBus, &flag, UInt32(sizeof(UInt32))) == noErr)
+//        assert(AudioUnitSetProperty(audioUnit, AudioUnitPropertyID(kAudioOutputUnitProperty_EnableIO), AudioUnitScope(kAudioUnitScope_Output), outputBus, &flag, UInt32(sizeof(UInt32))) == noErr)
+        
         checkStatus(status)
         // Enable IO for playback
-        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, flag, sizeof())
+        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, UInt32(sizeof(UInt32)))
         checkStatus(status)
             // Describe format
             var audioFormat: AudioStreamBasicDescription
@@ -221,7 +224,7 @@ class AudioHandler: NSObject {
         audioFormat.mBytesPerPacket = 2
         audioFormat.mBytesPerFrame = 2
         // Apply format
-        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, audioFormat, sizeof())
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &audioFormat, UInt32(sizeof(UInt32)))
         checkStatus(status)
             /* Make sure that your application can receive remote control
                  * events by adding the code:
@@ -333,8 +336,8 @@ class AudioHandler: NSObject {
 
 
 
-let kOutputBus:CInt = 0
-let kInputBus:CInt = 1
+let kOutputBus:UInt32 = 0
+let kInputBus:UInt32 = 1
 //var g729EncoderDecoder: G729Wrapper
 
 //var sharedInstance: AudioHandler? = nil
