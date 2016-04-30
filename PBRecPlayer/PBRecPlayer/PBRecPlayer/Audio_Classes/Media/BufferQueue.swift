@@ -10,12 +10,11 @@ import Foundation
 class BufferQueue: NSObject {
 
     //@property (readwrite) short *buffer;
-    var front: CInt
-    var rear: CInt
+    var front: CInt = 0
+    var rear: CInt = 0
+    var bufferq: Int8?
 
-    required init?(coder aDecoder: NSCoder) {
-        
-    }
+
     
     convenience override init() {
         self.init()
@@ -25,27 +24,21 @@ class BufferQueue: NSObject {
     }
 
     func pushData(data: Byte, CIntdatalength datalen: CInt) -> CBool {
-        var totalDataLength: CInt = datalen
-        //    NSLog(@"pushData stat rear %d - front %d", rear, front);
+        let totalDataLength: CInt = datalen
         if rear + totalDataLength < kBufferSize {
-                //        NSLog(@"rear+ totalDataLength , rear: %d, %d", rear+ totalDataLength, rear);
             rear += totalDataLength
-            //        NSLog(@"coppied");
         }
         else {
-            var availableLength: CInt = kBufferSize - rear
-                //        NSLog(@"available length , rear: %d, %d", availableLength, rear);
+            let availableLength: CInt = kBufferSize - rear
             rear = totalDataLength - availableLength
             if rear >= front {
                 front = rear + 1
             }
-            //        NSLog(@"coppied");
         }
         //    rear++;
         if rear == kBufferSize {
             rear = 0
         }
-        //    NSLog(@"pushData end rear %d - front %d", rear, front);
         return true
     }
 
@@ -53,8 +46,7 @@ class BufferQueue: NSObject {
         if rear == front {
             return false
         }
-            //    NSLog(@"pop start rear %d - front %d", rear, front);
-        var totalDataToPop: CInt = datalen
+        let totalDataToPop: CInt = datalen
         if rear > front {
             if (rear - front) >= totalDataToPop {
                 front += totalDataToPop
@@ -64,16 +56,14 @@ class BufferQueue: NSObject {
             }
         }
         else {
-            var availableDataSize: CInt = (kBufferSize - front) + rear
+            let availableDataSize: CInt = (kBufferSize - front) + rear
             if availableDataSize >= totalDataToPop {
                 if (kBufferSize - front) >= totalDataToPop {
                     front += totalDataToPop
                 }
                 else {
-                    var len: CInt = kBufferSize - front
-                        //                NSLog(@"available: %d totalDataToPop: %d front: %d len: %d", availableDataSize, totalDataToPop, front, len);
+                    let len: CInt = kBufferSize - front
                     front = totalDataToPop - len
-                    //                NSLog(@"Complete pop. front: %d", front);
                 }
             }
             else {
@@ -83,7 +73,6 @@ class BufferQueue: NSObject {
         if front == kBufferSize {
             front = 0
         }
-        //    NSLog(@"pop end rear %d - front %d", rear, front);
         return true
     }
 
@@ -99,8 +88,8 @@ class BufferQueue: NSObject {
         return size
     }
 
-    var bufferq: Int8
 }
 
 
 let kBufferSize: CInt = 1024
+

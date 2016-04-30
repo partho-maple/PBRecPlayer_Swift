@@ -19,13 +19,10 @@ typealias Byte = UInt8
 class ViewController: UIViewController, AudioControllerDelegate {
     
     var iRTPDataLen: CInt = 0
-    var isRunning: CBool
+    var isRunning: CBool = false
+    var byteRTPDataToSend: UInt8 = 0
+
     @IBOutlet weak var startStopButton: UIButton!
-    
-    
-    required init?(coder aDecoder: NSCoder) {
-        
-    }
     
     
     func StartAudio() {
@@ -38,7 +35,6 @@ class ViewController: UIViewController, AudioControllerDelegate {
         AudioHandler.sharedInstance().resetRTPQueue()
     }
 
-    var byteRTPDataToSend: UInt8
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,20 +45,20 @@ class ViewController: UIViewController, AudioControllerDelegate {
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
+    
     // Basically, it will a callback method which will be called after getting each trp packet.
-
     func receivedRtpWithData(pChRtp: UInt8, andLength len: CInt) {
         let receivedRTPData: Byte
         var receivedRTPDataLength: CInt = 0
         receivedRTPDataLength = len
-        AudioHandler.sharedInstance().receiverAudio(receivedRTPData, WithLen: receivedRTPDataLength)
+//        AudioHandler.sharedInstance().receiverAudio(receivedRTPData, WithLen: receivedRTPDataLength)  // Uncomment this line
     }
-    // This method will be called after pulling each recorded data block
 
+    
     func recordedRTP(rtpData: Byte, andLenght len: CInt) {
             /* Here we will send rtpData(recorded and encoded data to send) to the other end. We have encoder, recorded data into rtpData variable and it's length is into len variable */
+        
         self.iRTPDataLen += len
         self.receivedRtpWithData(byteRTPDataToSend, andLength: self.iRTPDataLen)
 //        memset(byteRTPDataToSend, 0, 500)
