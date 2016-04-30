@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DBD9361119EA78EC0068C041"
+               BlueprintIdentifier = "77F0748A1CD53E3000A0CA58"
                BuildableName = "PBRecPlayer.app"
                BlueprintName = "PBRecPlayer"
                ReferencedContainer = "container:PBRecPlayer.xcodeproj">
@@ -28,11 +28,31 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "77F0749E1CD53E3000A0CA58"
+               BuildableName = "PBRecPlayerTests.xctest"
+               BlueprintName = "PBRecPlayerTests"
+               ReferencedContainer = "container:PBRecPlayer.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "77F074A91CD53E3000A0CA58"
+               BuildableName = "PBRecPlayerUITests.xctest"
+               BlueprintName = "PBRecPlayerUITests"
+               ReferencedContainer = "container:PBRecPlayer.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DBD9361119EA78EC0068C041"
+            BlueprintIdentifier = "77F0748A1CD53E3000A0CA58"
             BuildableName = "PBRecPlayer.app"
             BlueprintName = "PBRecPlayer"
             ReferencedContainer = "container:PBRecPlayer.xcodeproj">
@@ -55,7 +75,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DBD9361119EA78EC0068C041"
+            BlueprintIdentifier = "77F0748A1CD53E3000A0CA58"
             BuildableName = "PBRecPlayer.app"
             BlueprintName = "PBRecPlayer"
             ReferencedContainer = "container:PBRecPlayer.xcodeproj">
@@ -74,7 +94,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DBD9361119EA78EC0068C041"
+            BlueprintIdentifier = "77F0748A1CD53E3000A0CA58"
             BuildableName = "PBRecPlayer.app"
             BlueprintName = "PBRecPlayer"
             ReferencedContainer = "container:PBRecPlayer.xcodeproj">

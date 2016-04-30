@@ -99,7 +99,10 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
     
     
 
-class AudioHandler: NSObject {
+class AudioHandler {
+    
+//    private let sharedAudioHandler = AudioHandler()
+//    private static let sharedAudioHandler = AudioHandler()
 //    var audioUnit: AudioComponentInstance
 //    var tempBuffer: AudioBuffer
 
@@ -112,8 +115,8 @@ class AudioHandler: NSObject {
     var audioDelegate: AudioControllerDelegate!
     var g729EncoderDecoder: G729Wrapper?
 
-    var audioUnit:AudioUnit?
-    var tempBuffer:AudioBuffer!
+    var audioUnit:AudioUnit = AudioUnit()
+    var tempBuffer:AudioBuffer! = AudioBuffer()
 
     var pcmRcordedData: BufferQueue?
 
@@ -121,14 +124,29 @@ class AudioHandler: NSObject {
     var isAudioUnitRunning: CBool = false
     var isBufferClean: CBool = true
 
-    class func sharedInstance() -> AudioHandler {
-//        if sharedInstance == nil {
-//            sharedInstance = AudioHandler()
-//        }
-//        return sharedInstance!
-        
-        return sharedAudioHandler;
+//    class func sharedInstance() -> AudioHandler {
+////        if sharedInstance == nil {
+////            sharedInstance = AudioHandler()
+////        }
+////        return sharedInstance
+//        
+//        return sharedAudioHandler;
+//    }
+    
+    
+    class var sharedInstance: AudioHandler {
+        struct Static {
+            static var onceToken: dispatch_once_t = 0
+            static var instance: AudioHandler? = nil
+        }
+        dispatch_once(&Static.onceToken) {
+            Static.instance = AudioHandler()
+        }
+        return Static.instance!
     }
+    
+    
+    
 
     func start() {
         if isAudioUnitRunning {
@@ -146,9 +164,9 @@ class AudioHandler: NSObject {
         try! audioSession.overrideOutputAudioPort(AVAudioSessionPortOverride.None)
         try! audioSession.setActive(true)
 
-        status = AudioUnitInitialize(audioUnit!)
+        status = AudioUnitInitialize(audioUnit)
         checkStatus(status)
-        status = AudioOutputUnitStart(audioUnit!)
+        status = AudioOutputUnitStart(audioUnit)
         checkStatus(status)
         
         // Uncomment this Block
@@ -168,11 +186,11 @@ class AudioHandler: NSObject {
         let device: UIDevice = UIDevice.currentDevice()
         device.proximityMonitoringEnabled = false
             var status: OSStatus
-        status = AudioOutputUnitStop(audioUnit!)
+        status = AudioOutputUnitStop(audioUnit)
         checkStatus(status)
         try! AVAudioSession.sharedInstance().setActive(false)
         checkStatus(status)
-        status = AudioUnitUninitialize(audioUnit!)
+        status = AudioUnitUninitialize(audioUnit)
         checkStatus(status)
         isRecordDataPullingThreadRunning = false
         isAudioUnitRunning = false
@@ -187,15 +205,15 @@ class AudioHandler: NSObject {
         g729EncoderDecoder!.close()
     }
     
-    convenience override init() {
-        self.init()
+    init() {
+//        self.init()
         
-        self.audioUnit = nil
+//        self.audioUnit = nil
         var status: OSStatus
         pcmRcordedData = BufferQueue()
         g729EncoderDecoder = G729Wrapper()
-        TPCircularBufferInit(&recordedPCMBuffer!, 100000)
-        TPCircularBufferInit(&receivedPCMBuffer!, 100000)
+//        TPCircularBufferInit(&recordedPCMBuffer!, 100000)
+//        TPCircularBufferInit(&receivedPCMBuffer!, 100000)
 
         var desc: AudioComponentDescription = AudioComponentDescription()
         desc.componentType = kAudioUnitType_Output
@@ -206,18 +224,18 @@ class AudioHandler: NSObject {
 
         let inputComponent: AudioComponent = AudioComponentFindNext(nil, &desc)
 
-        status = AudioComponentInstanceNew(inputComponent, &audioUnit!)
+        status = AudioComponentInstanceNew(inputComponent, &audioUnit)
         checkStatus(status)
 
         var flag = UInt32(1)
-        status = AudioUnitSetProperty(audioUnit!, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, UInt32(sizeof(UInt32)))
+        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, UInt32(sizeof(UInt32)))
         
         checkStatus(status)
 
-        status = AudioUnitSetProperty(audioUnit!, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, UInt32(sizeof(UInt32)))
+        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, UInt32(sizeof(UInt32)))
         checkStatus(status)
 
-        var audioFormat: AudioStreamBasicDescription
+        var audioFormat: AudioStreamBasicDescription! = AudioStreamBasicDescription()
         audioFormat.mSampleRate = 8000
         audioFormat.mFormatID = kAudioFormatLinearPCM
         audioFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked
@@ -227,7 +245,7 @@ class AudioHandler: NSObject {
         audioFormat.mBytesPerPacket = 2
         audioFormat.mBytesPerFrame = 2
 
-        status = AudioUnitSetProperty(audioUnit!, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &audioFormat, UInt32(sizeof(UInt32)))
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &audioFormat, UInt32(sizeof(UInt32)))
         checkStatus(status)
         
         
@@ -236,25 +254,25 @@ class AudioHandler: NSObject {
 //        var audioCategory = kAudioSessionCategory_PlayAndRecord
 //        status = AudioSessionSetProperty(UInt32(kAudioSessionProperty_AudioCategory), UInt32(sizeof(UInt32)), &audioCategory)
 //        checkStatus(status)
-        status = AudioUnitSetProperty(audioUnit!, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &audioFormat, UInt32(sizeof(UInt32)))
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &audioFormat, UInt32(sizeof(UInt32)))
         checkStatus(status)
         
         
         // Set input callback
-        var callbackStruct: AURenderCallbackStruct
+        var callbackStruct: AURenderCallbackStruct! = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
         callbackStruct.inputProc = recordingCallback
         callbackStruct.inputProcRefCon = UnsafeMutablePointer(unsafeAddressOf(self))
-        status = AudioUnitSetProperty(audioUnit!, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callbackStruct, UInt32(sizeof(UInt32)))
+        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callbackStruct, UInt32(sizeof(UInt32)))
         checkStatus(status)
         
         // Set output/renderar callback
         callbackStruct.inputProc = playbackCallback
         callbackStruct.inputProcRefCon = UnsafeMutablePointer(unsafeAddressOf(self))
-        status = AudioUnitSetProperty(audioUnit!, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Global, kOutputBus, &callbackStruct, UInt32(sizeof(UInt32)))
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Global, kOutputBus, &callbackStruct, UInt32(sizeof(UInt32)))
         checkStatus(status)
 
         flag = 0
-        status = AudioUnitSetProperty(audioUnit!, kAudioUnitProperty_ShouldAllocateBuffer, kAudioUnitScope_Output, kInputBus, &flag, UInt32(sizeof(UInt32)))
+        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_ShouldAllocateBuffer, kAudioUnitScope_Output, kInputBus, &flag, UInt32(sizeof(UInt32)))
 
 
         tempBuffer.mNumberChannels = 1
@@ -272,7 +290,7 @@ class AudioHandler: NSObject {
 let kOutputBus:UInt32 = 0
 let kInputBus:UInt32 = 1
 
-private let sharedAudioHandler = AudioHandler()
+//private let sharedAudioHandler = AudioHandler()
 
 func checkStatus(status :CInt) {
     if status<0 {

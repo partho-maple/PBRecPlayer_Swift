@@ -1,10 +1,12 @@
 //
-//  ViewController.h
+//  ViewController.swift
 //  PBRecPlayer
 //
-//  Created by Partho Biswas on 21/04/16.
-//  Copyright (c) 2014 Partho Biswas All rights reserved.
+//  Created by Partho Biswas on 5/1/16.
+//  Copyright © 2016 Partho Biswas. All rights reserved.
 //
+
+
 
 import UIKit
 import AVFoundation
@@ -21,28 +23,28 @@ class ViewController: UIViewController, AudioControllerDelegate {
     var iRTPDataLen: CInt = 0
     var isRunning: CBool = false
     var byteRTPDataToSend: UInt8 = 0
-
+    
     @IBOutlet weak var startStopButton: UIButton!
     
     
     func StartAudio() {
-        AudioHandler.sharedInstance().start()
-        AudioHandler.sharedInstance().resetRTPQueue()
+        AudioHandler.sharedInstance.start()
+        AudioHandler.sharedInstance.resetRTPQueue()
     }
-
+    
     func StopAudio() {
-        AudioHandler.sharedInstance().stop()
-        AudioHandler.sharedInstance().resetRTPQueue()
+        AudioHandler.sharedInstance.stop()
+        AudioHandler.sharedInstance.resetRTPQueue()
     }
-
-
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.isRunning = false
         self.iRTPDataLen = 0
-        AudioHandler.sharedInstance().audioDelegate = self
+        AudioHandler.sharedInstance.audioDelegate = self
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -52,20 +54,21 @@ class ViewController: UIViewController, AudioControllerDelegate {
         let receivedRTPData: Byte
         var receivedRTPDataLength: CInt = 0
         receivedRTPDataLength = len
-//        AudioHandler.sharedInstance().receiverAudio(receivedRTPData, WithLen: receivedRTPDataLength)  // Uncomment this line
+        //        AudioHandler.sharedInstance().receiverAudio(receivedRTPData, WithLen: receivedRTPDataLength)  // Uncomment this line
     }
-
+    
     
     func recordedRTP(rtpData: Byte, andLenght len: CInt) {
-            /* Here we will send rtpData(recorded and encoded data to send) to the other end. We have encoder, recorded data into rtpData variable and it's length is into len variable */
+        /* Here we will send rtpData(recorded and encoded data to send) to the other end. We have encoder, recorded data into rtpData variable and it's length is into len variable */
         
         self.iRTPDataLen += len
         self.receivedRtpWithData(byteRTPDataToSend, andLength: self.iRTPDataLen)
-//        memset(byteRTPDataToSend, 0, 500)
+        //        memset(byteRTPDataToSend, 0, 500)
         memset(&byteRTPDataToSend, 0, 500)
         self.iRTPDataLen = 0
     }
-
+    
+    
     @IBAction func StartButtonTapped(sender: AnyObject) {
         if self.isRunning {
             self.isRunning = false
@@ -78,7 +81,10 @@ class ViewController: UIViewController, AudioControllerDelegate {
             self.startStopButton.setTitle("STOP", forState: .Normal)
         }
     }
-
+    
+    
 }
+
+
 
 

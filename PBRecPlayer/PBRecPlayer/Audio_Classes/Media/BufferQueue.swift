@@ -7,7 +7,7 @@
 //
 
 import Foundation
-class BufferQueue: NSObject {
+class BufferQueue {
 
     //@property (readwrite) short *buffer;
     var front: CInt = 0
@@ -16,8 +16,8 @@ class BufferQueue: NSObject {
 
 
     
-    convenience override init() {
-        self.init()
+    init() {
+//        self.init()
         //buffer = alloca(514);
         front = 0
         rear = 0
