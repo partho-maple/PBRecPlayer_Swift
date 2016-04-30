@@ -51,7 +51,6 @@
 		77F0757A1CD53F5900A0CA58 /* G729Wrapper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 77F0754B1CD53F5900A0CA58 /* G729Wrapper.mm */; };
 		77F0757B1CD53F5900A0CA58 /* TPCircularBuffer+AudioBufferList.c in Sources */ = {isa = PBXBuildFile; fileRef = 77F0754D1CD53F5900A0CA58 /* TPCircularBuffer+AudioBufferList.c */; };
 		77F0757C1CD53F5900A0CA58 /* TPCircularBuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 77F0754F1CD53F5900A0CA58 /* TPCircularBuffer.c */; };
-		77F0757F1CD5464700A0CA58 /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77F0757E1CD5464700A0CA58 /* File.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -216,7 +215,6 @@
 		77F0754F1CD53F5900A0CA58 /* TPCircularBuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TPCircularBuffer.c; sourceTree = "<group>"; };
 		77F075501CD53F5900A0CA58 /* TPCircularBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TPCircularBuffer.h; sourceTree = "<group>"; };
 		77F0757D1CD53F7700A0CA58 /* PBRecPlayer_BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PBRecPlayer_BridgingHeader.h; sourceTree = "<group>"; };
-		77F0757E1CD5464700A0CA58 /* File.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -311,7 +309,6 @@
 			children = (
 				77F074C81CD53F5900A0CA58 /* AudioHandler.swift */,
 				77F074C91CD53F5900A0CA58 /* BufferQueue.swift */,
-				77F0757E1CD5464700A0CA58 /* File.swift */,
 			);
 			path = Media;
 			sourceTree = "<group>";
@@ -635,7 +632,6 @@
 				77F075601CD53F5900A0CA58 /* dec_gain.c in Sources */,
 				77F075671CD53F5900A0CA58 /* gainpred.c in Sources */,
 				77F075721CD53F5900A0CA58 /* pred_lt3.c in Sources */,
-				77F0757F1CD5464700A0CA58 /* File.swift in Sources */,
 				77F075701CD53F5900A0CA58 /* postfilt.c in Sources */,
 				77F075681CD53F5900A0CA58 /* lpc.c in Sources */,
 				77F0757B1CD53F5900A0CA58 /* TPCircularBuffer+AudioBufferList.c in Sources */,
@@ -898,6 +894,7 @@
 				77F074B51CD53E3000A0CA58 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		77F074B61CD53E3000A0CA58 /* Build configuration list for PBXNativeTarget "PBRecPlayerTests" */ = {
 			isa = XCConfigurationList;
@@ -906,6 +903,7 @@
 				77F074B81CD53E3000A0CA58 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		77F074B91CD53E3000A0CA58 /* Build configuration list for PBXNativeTarget "PBRecPlayerUITests" */ = {
 			isa = XCConfigurationList;
@@ -914,6 +912,7 @@
 				77F074BB1CD53E3000A0CA58 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
