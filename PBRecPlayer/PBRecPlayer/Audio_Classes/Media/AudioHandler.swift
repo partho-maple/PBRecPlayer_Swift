@@ -12,6 +12,13 @@ import AudioToolbox
 import CoreAudio
 import AVFoundation
 import Swift
+import AudioUnit
+
+
+let preferredIOBufferDuration = 0.005 // a value of 5 ms seems to introduce ~1% of CPU usage on iPhone 5
+let kInputBus  = AudioUnitElement(1)
+let kOutputBus = AudioUnitElement(0)
+
 
 protocol AudioControllerDelegate {
     func recordedRTP(rtpData: Byte, andLenght len: CInt)
@@ -120,6 +127,8 @@ class AudioHandler {
     var isAudioUnitRunning: CBool = false
     var isBufferClean: CBool = true
     
+
+    
     
     class var sharedInstance: AudioHandler {
         struct Static {
@@ -146,6 +155,14 @@ class AudioHandler {
         //        TPCircularBufferInit(&recordedPCMBuffer!, 100000)
         //        TPCircularBufferInit(&receivedPCMBuffer!, 100000)
         
+        
+        do {
+            try AVAudioSession.sharedInstance().setPreferredIOBufferDuration(preferredIOBufferDuration)
+        } catch let error as NSError {
+            print(error)
+        }
+        
+        
         var desc: AudioComponentDescription = AudioComponentDescription()
         desc.componentType = kAudioUnitType_Output
         desc.componentSubType = kAudioUnitSubType_VoiceProcessingIO
@@ -160,7 +177,6 @@ class AudioHandler {
         
         var flag = UInt32(1)
         status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, UInt32(sizeof(UInt32)))
-        
         checkStatus(status)
         
         status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Output, kOutputBus, &flag, UInt32(sizeof(UInt32)))
@@ -182,26 +198,50 @@ class AudioHandler {
         
         
         try! AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayAndRecord)
-        //        var audioCategory = kAudioSessionCategory_PlayAndRecord
-        //        status = AudioSessionSetProperty(UInt32(kAudioSessionProperty_AudioCategory), UInt32(sizeof(UInt32)), &audioCategory)
-        //        checkStatus(status)
         status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &audioFormat, UInt32(sizeof(UInt32)))
         checkStatus(status)
         
         
-        // Set input callback
-        var callbackStruct: AURenderCallbackStruct! = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
-        callbackStruct.inputProc = recordingCallback
-        callbackStruct.inputProcRefCon = UnsafeMutablePointer(unsafeAddressOf(self))
-        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callbackStruct, UInt32(sizeof(UInt32)))
-        checkStatus(status)
         
-        // Set output/renderar callback
-        var callbackStruct2: AURenderCallbackStruct! = AURenderCallbackStruct(inputProc: playbackCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
-        callbackStruct2.inputProc = playbackCallback
-        callbackStruct2.inputProcRefCon = UnsafeMutablePointer(unsafeAddressOf(self))
-        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Global, kOutputBus, &callbackStruct2, UInt32(sizeof(UInt32)))
-        checkStatus(status)
+        
+        
+        
+        
+        
+        
+        
+        
+//        // Set input/recording callback
+//        var callbackStruct: AURenderCallbackStruct! = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
+//        callbackStruct.inputProc = recordingCallback
+//        callbackStruct.inputProcRefCon = UnsafeMutablePointer(unsafeAddressOf(self))
+//        status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callbackStruct, UInt32(sizeof(UInt32)))
+//        checkStatus(status)
+        
+        var inputCallbackStruct = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
+        AudioUnitSetProperty(audioUnit, AudioUnitPropertyID(kAudioOutputUnitProperty_SetInputCallback), AudioUnitScope(kAudioUnitScope_Global), 1, &inputCallbackStruct, UInt32(sizeof(AURenderCallbackStruct)))
+        
+        
+        
+        
+        
+        
+        
+//        // Set output/renderar/playback callback
+//        var callbackStruct2: AURenderCallbackStruct! = AURenderCallbackStruct(inputProc: playbackCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
+//        callbackStruct2.inputProc = playbackCallback
+//        callbackStruct2.inputProcRefCon = UnsafeMutablePointer(unsafeAddressOf(self))
+//        status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Global, kOutputBus, &callbackStruct2, UInt32(sizeof(UInt32)))
+//        checkStatus(status)
+        
+        var renderCallbackStruct = AURenderCallbackStruct(inputProc: playbackCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
+        AudioUnitSetProperty(audioUnit, AudioUnitPropertyID(kAudioUnitProperty_SetRenderCallback), AudioUnitScope(kAudioUnitScope_Global), 0, &renderCallbackStruct, UInt32(sizeof(AURenderCallbackStruct)))
+        
+        
+        
+        
+        
+        
         
         flag = 0
         status = AudioUnitSetProperty(audioUnit, kAudioUnitProperty_ShouldAllocateBuffer, kAudioUnitScope_Output, kInputBus, &flag, UInt32(sizeof(UInt32)))
@@ -274,8 +314,6 @@ class AudioHandler {
 
 
 
-let kOutputBus:UInt32 = 0
-let kInputBus:UInt32 = 1
 
 
 func checkStatus(status :CInt) {

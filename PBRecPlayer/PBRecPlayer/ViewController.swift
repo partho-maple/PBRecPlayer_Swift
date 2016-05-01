@@ -74,11 +74,13 @@ class ViewController: UIViewController, AudioControllerDelegate {
             self.isRunning = false
             self.StopAudio()
             self.startStopButton.setTitle("START", forState: .Normal)
+//            AudioMetering().stop()
         }
         else {
             self.isRunning = true
             self.StartAudio()
             self.startStopButton.setTitle("STOP", forState: .Normal)
+//            AudioMetering().start()
         }
     }
     
