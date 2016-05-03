@@ -53,10 +53,11 @@ class ViewController: UIViewController, AudioControllerDelegate {
     func receivedRtpWithData(pChRtp: UInt8, andLength len: CInt) {
         var receivedRTPData: Byte = Byte()
         var receivedRTPDataLength: CInt = 0
+        var pChRtpLocal = pChRtp
         
-        memcpy(&receivedRTPData, &pChRtp, len);
+        memcpy(&receivedRTPData, &pChRtpLocal, Int(len));
         receivedRTPDataLength = len
-        AudioHandler.sharedInstance.receiverAudio(receivedRTPData, WithLen: receivedRTPDataLength)  // Uncomment this line
+        AudioHandler.sharedInstance.receiverAudio(&receivedRTPData, WithLen: receivedRTPDataLength)
     }
     
     
@@ -64,8 +65,9 @@ class ViewController: UIViewController, AudioControllerDelegate {
     
     func recordedRTP(rtpData: Byte, andLenght len: CInt) {
         /* Here we will send rtpData(recorded and encoded data to send) to the other end. We have encoder, recorded data into rtpData variable and it's length is into len variable */
+        var rtpDataLocal = rtpData
         var temp = byteRTPDataToSend+self.iRTPDataLen
-        memcpy(&temp, &rtpData, len);
+        memcpy(&temp, &rtpDataLocal, Int(len));
         self.iRTPDataLen += len
         self.receivedRtpWithData(UInt8(byteRTPDataToSend), andLength: self.iRTPDataLen)
         //        memset(byteRTPDataToSend, 0, 500)
