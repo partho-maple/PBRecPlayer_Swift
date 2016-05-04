@@ -79,8 +79,10 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
     
     // Uncomment and fix this block
     
+//    let abl: AudioBufferList = UnsafeMutableAudioBufferListPointer(ioData) as AudioBufferList
+    
     var THIS: AudioHandler = AudioHandler.sharedInstance
-    for var i = 0; i < ioData.mNumberBuffers; i += 1 {
+    for i in 0 ..< Int(inBufNumber) {
         var buffer: AudioBuffer = ioData.mBuffers[i]
         var availabeBytes: CInt
         var size: UInt32
