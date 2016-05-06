@@ -71,6 +71,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		77569A201CDCA56400C20A88 /* PBRecPlayer.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = PBRecPlayer.playground; sourceTree = "<group>"; };
 		77F0748B1CD53E3000A0CA58 /* PBRecPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PBRecPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77F0748E1CD53E3000A0CA58 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77F074901CD53E3000A0CA58 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -265,6 +266,7 @@
 		77F0748D1CD53E3000A0CA58 /* PBRecPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				77569A201CDCA56400C20A88 /* PBRecPlayer.playground */,
 				77F0757D1CD53F7700A0CA58 /* PBRecPlayer_BridgingHeader.h */,
 				77F0748E1CD53E3000A0CA58 /* AppDelegate.swift */,
 				77F074901CD53E3000A0CA58 /* ViewController.swift */,
