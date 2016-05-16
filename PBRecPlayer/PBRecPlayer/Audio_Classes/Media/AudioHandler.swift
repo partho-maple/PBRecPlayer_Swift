@@ -56,6 +56,33 @@ func recordingCallback(inRefCon: UnsafeMutablePointer<Void>,
     return noErr
 }
 
+
+
+func renderarCallback(inRefCon: UnsafeMutablePointer<Void>, ioActionFlag: UnsafeMutablePointer<AudioUnitRenderActionFlags>, inTimeStamp: UnsafePointer<AudioTimeStamp>, inBufferNumber: UInt32, inNumberFrames: UInt32, ioData: UnsafeMutablePointer<AudioBufferList>) -> OSStatus {
+    
+    print("recordingCallback got fired  >>>")
+    
+    var buffer: AudioBuffer
+    buffer.mNumberChannels = 1
+    buffer.mDataByteSize = inNumberFrames * 2
+    buffer.mData = malloc(Int(inNumberFrames) * 2)
+    
+    var bufferList: AudioBufferList
+    bufferList.mNumberBuffers = 1
+    bufferList.mBuffers = buffer
+    var status: OSStatus
+    status = AudioUnitRender(AudioHandler.sharedInstance.audioUnit, ioActionFlags, inTimeStamp, inBufNumber, inNumberFrames, &bufferList)
+    checkStatus(status)
+    
+    AudioHandler.sharedInstance.processAudio(bufferList)
+    
+    free(bufferList.mBuffers.mData)
+    
+    
+    return noErr
+}
+
+
     
 
 func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
@@ -79,11 +106,35 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
     
     // Uncomment and fix this block
     
+    var audioBufferListPtr = UnsafeMutableAudioBufferListPointer(ioData).unsafeMutablePointer.memory
+    for i in 0 ..< Int(inBufNumber) {
+        var buffer: AudioBuffer = audioBufferListPtr.mBuffers
+    }
+    
+    for buffer in abl {
+        
+        memset(buffer.mData, 0, Int(buffer.mDataByteSize))
+    }
+    
+    
+     let abl = UnsafeMutableAudioBufferListPointer(ioData)
+    let mBuffers=abl.memory.mBuffers
+    
+    let data=UnsafePointer<Int16>(mBuffers.mData)
+    let dataArray=UnsafeBufferPointer<Int16>(start:data, count: Int(mBuffers.mDataByteSize)/sizeof(Int16))
+
+    
 //    let abl: AudioBufferList = UnsafeMutableAudioBufferListPointer(ioData) as AudioBufferList
+    let audioBufferList = UnsafeMutableAudioBufferListPointer(ioData).m
+    
+    for buffer in audioBufferList {
+        
+        memset(buffer.mData, 0, Int(buffer.mDataByteSize))
+    }
     
     var THIS: AudioHandler = AudioHandler.sharedInstance
     for i in 0 ..< Int(inBufNumber) {
-        var buffer: AudioBuffer = ioData.mBuffers[i]
+        var buffer: AudioBuffer = ioData.memory.mBuffers
         var availabeBytes: CInt
         var size: UInt32
         var temp: UnsafeMutablePointer<Void> = nil
