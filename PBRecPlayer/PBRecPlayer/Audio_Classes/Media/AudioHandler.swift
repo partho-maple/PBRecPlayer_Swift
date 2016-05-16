@@ -36,12 +36,12 @@ func recordingCallback(inRefCon: UnsafeMutablePointer<Void>,
     
     print("recordingCallback got fired  >>>")
     
-    var buffer: AudioBuffer
+    var buffer: AudioBuffer = AudioBuffer()
     buffer.mNumberChannels = 1
     buffer.mDataByteSize = inNumberFrames * 2
     buffer.mData = malloc(Int(inNumberFrames) * 2)
     
-    var bufferList: AudioBufferList
+    var bufferList: AudioBufferList = AudioBufferList()
     bufferList.mNumberBuffers = 1
     bufferList.mBuffers = buffer
     var status: OSStatus
@@ -52,32 +52,6 @@ func recordingCallback(inRefCon: UnsafeMutablePointer<Void>,
     
     free(bufferList.mBuffers.mData)
  
-    
-    return noErr
-}
-
-
-
-func renderarCallback(inRefCon: UnsafeMutablePointer<Void>, ioActionFlag: UnsafeMutablePointer<AudioUnitRenderActionFlags>, inTimeStamp: UnsafePointer<AudioTimeStamp>, inBufferNumber: UInt32, inNumberFrames: UInt32, ioData: UnsafeMutablePointer<AudioBufferList>) -> OSStatus {
-    
-    print("recordingCallback got fired  >>>")
-    
-    var buffer: AudioBuffer
-    buffer.mNumberChannels = 1
-    buffer.mDataByteSize = inNumberFrames * 2
-    buffer.mData = malloc(Int(inNumberFrames) * 2)
-    
-    var bufferList: AudioBufferList
-    bufferList.mNumberBuffers = 1
-    bufferList.mBuffers = buffer
-    var status: OSStatus
-    status = AudioUnitRender(AudioHandler.sharedInstance.audioUnit, ioActionFlags, inTimeStamp, inBufNumber, inNumberFrames, &bufferList)
-    checkStatus(status)
-    
-    AudioHandler.sharedInstance.processAudio(bufferList)
-    
-    free(bufferList.mBuffers.mData)
-    
     
     return noErr
 }
@@ -94,62 +68,29 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
     
     print("playbackCallback got fired  <<<")
     
-    //        let delegate = unsafeBitCast(inRefCon, AURenderCallbackDelegate.self)
-    //        let result = delegate.performRender(ioActionFlags,
-    //                                            inTimeStamp: inTimeStamp,
-    //                                            inBufNumber: inBufNumber,
-    //                                            inNumberFrames: inNumberFrames,
-    //                                            ioData: ioData)
-    //        return result
-    
-    
-    
-    // Uncomment and fix this block
-    
-    var audioBufferListPtr = UnsafeMutableAudioBufferListPointer(ioData).unsafeMutablePointer.memory
+    let audioBufferListPtr = UnsafeMutableAudioBufferListPointer(ioData).unsafeMutablePointer.memory
     for i in 0 ..< Int(inBufNumber) {
         var buffer: AudioBuffer = audioBufferListPtr.mBuffers
     }
     
-    for buffer in abl {
-        
-        memset(buffer.mData, 0, Int(buffer.mDataByteSize))
-    }
-    
-    
-     let abl = UnsafeMutableAudioBufferListPointer(ioData)
-    let mBuffers=abl.memory.mBuffers
-    
-    let data=UnsafePointer<Int16>(mBuffers.mData)
-    let dataArray=UnsafeBufferPointer<Int16>(start:data, count: Int(mBuffers.mDataByteSize)/sizeof(Int16))
-
-    
-//    let abl: AudioBufferList = UnsafeMutableAudioBufferListPointer(ioData) as AudioBufferList
-    let audioBufferList = UnsafeMutableAudioBufferListPointer(ioData).m
-    
-    for buffer in audioBufferList {
-        
-        memset(buffer.mData, 0, Int(buffer.mDataByteSize))
-    }
-    
-    var THIS: AudioHandler = AudioHandler.sharedInstance
+    let THIS: AudioHandler = AudioHandler.sharedInstance
     for i in 0 ..< Int(inBufNumber) {
         var buffer: AudioBuffer = ioData.memory.mBuffers
         var availabeBytes: CInt
         var size: UInt32
         var temp: UnsafeMutablePointer<Void> = nil
-        availabeBytes = THIS.receivedPCMBuffer!.fillCount
-        size = min(buffer.mDataByteSize, availabeBytes)
+        availabeBytes = THIS.receivedPCMBuffer.fillCount
+        size = min(buffer.mDataByteSize, UInt32(availabeBytes))
         if size == 0 {
             return 1
         }
-        temp = TPCircularBufferTail(&THIS.receivedPCMBuffer!, &availabeBytes)
+        temp = TPCircularBufferTail(&THIS.receivedPCMBuffer, &availabeBytes)
         if temp == nil {
             return 1
         }
         memcpy(buffer.mData, &temp, Int(size))
         buffer.mDataByteSize = size
-        TPCircularBufferConsume(&THIS.receivedPCMBuffer!, Int32(size))
+        TPCircularBufferConsume(&THIS.receivedPCMBuffer, Int32(size))
     }
     
     
@@ -159,14 +100,52 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
     
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @objc class AudioHandler: NSObject {
 
     var shortArray: [CShort] = [CShort]()
     var receivedShort: [CShort] = [CShort]()
     var recorderThread: NSThread!
     
-    var recordedPCMBuffer: TPCircularBuffer?
-    var receivedPCMBuffer: TPCircularBuffer?
+    var recordedPCMBuffer: TPCircularBuffer = TPCircularBuffer()
+    var receivedPCMBuffer: TPCircularBuffer = TPCircularBuffer()
     var audioDelegate: AudioControllerDelegate!
     var g729EncoderDecoder: G729Wrapper!
 
@@ -199,13 +178,15 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
     
     override init() {
         
+        super.init()
+        
         var status: OSStatus
         pcmRcordedData = BufferQueue()
         g729EncoderDecoder = G729Wrapper()
         
         // Uncomment this block
-        TPCircularBufferInit(&recordedPCMBuffer!, 100000)
-        TPCircularBufferInit(&receivedPCMBuffer!, 100000)
+        TPCircularBufferInit(&recordedPCMBuffer, 100000)
+        TPCircularBufferInit(&receivedPCMBuffer, 100000)
         
         
         do {
@@ -339,7 +320,7 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
 //        }
 
         
-        isRecordedBufferProduceBytes = TPCircularBufferProduceBytes(&recordedPCMBuffer!, bufferList.mBuffers.mData, Int32(bufferList.mBuffers.mDataByteSize))
+        isRecordedBufferProduceBytes = TPCircularBufferProduceBytes(&recordedPCMBuffer, bufferList.mBuffers.mData, Int32(bufferList.mBuffers.mDataByteSize))
         if !isRecordedBufferProduceBytes {
             
         }
@@ -350,7 +331,7 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
         memset(&receivedShort, 0, 1024);
         
         let numberOfDecodedShorts: CInt = g729EncoderDecoder.decodeWithG729(&audio, andSize: len, andEncodedPCM: &receivedShort)
-        isBufferProduceBytes = TPCircularBufferProduceBytes(&receivedPCMBuffer!, receivedShort, (numberOfDecodedShorts * 2))
+        isBufferProduceBytes = TPCircularBufferProduceBytes(&receivedPCMBuffer, receivedShort, (numberOfDecodedShorts * 2))
 
         if !isBufferProduceBytes {
             
@@ -358,15 +339,15 @@ func playbackCallback(inRefCon: UnsafeMutablePointer<Void>,
     }
     
     func recordDataPullingMethod() {
-        var availableBytes: CInt
+        var availableBytes: CInt = CInt()
         while self.isRecordDataPullingThreadRunning {
-            let buffer: UnsafeMutablePointer<Void> = TPCircularBufferTail(&recordedPCMBuffer!, &availableBytes)
+            let buffer: UnsafeMutablePointer<Void> = TPCircularBufferTail(&recordedPCMBuffer, &availableBytes)
             if availableBytes > 159 {
                 
                 memcpy(&shortArray, buffer, 160)
-                TPCircularBufferConsume(&recordedPCMBuffer!, 160);
+                TPCircularBufferConsume(&recordedPCMBuffer, 160);
                 
-                var g729EncodedBytes: Byte
+                var g729EncodedBytes: Byte = Byte()
                 let encodedLength: CInt = g729EncoderDecoder.encodeWithPCM(&shortArray, andSize: 80, andEncodedG729: &g729EncodedBytes)
                 if encodedLength > 0 {
                     audioDelegate.recordedRTP(g729EncodedBytes, andLenght: encodedLength)
